@@ -4,8 +4,8 @@ const   express  = require('express'),
         settings = require("./settings")
         Question = require("./models/Question"),
         Answer   = require("./models/Answer")
-        PORT     = settings.PORT;
-        auth   = require("./auth")
+        PORT     = process.env.PORT || settings.PORT;
+        auth     = require("./auth")
 
 app.use(express.json())
 
