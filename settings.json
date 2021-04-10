@@ -1,0 +1,6 @@
+{
+    "DB_URI": "mongodb+srv://sharedprofile:sharedprofile@cluster0.9f4vo.mongodb.net/qaforum?retryWrites=true&w=majority",
+    "JWT_SECRET": "This is the JWT@Secret", 
+    "SALT_ROUNDS": 10,
+    "PORT": 5000
+}
