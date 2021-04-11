@@ -1,5 +1,6 @@
 const   express  = require('express'),
         mongoose = require('mongoose'),
+        cors     = require('cors')
         app      = express(),
         settings = require("./settings")
         Question = require("./models/Question"),
@@ -7,6 +8,7 @@ const   express  = require('express'),
         PORT     = process.env.PORT || settings.PORT;
         auth     = require("./auth")
 
+app.use(cors())
 app.use(express.json())
 
 //Connecting to MongoDB Atlas
