@@ -54,7 +54,7 @@ const signup = async (request, response) => {
         .catch(error => {return response.status(500).send(generateErrorInformation("Sorry, encountered some error, please try again", error))})
     }
     catch(error) {
-        return response.status(501).send(genrateErrorInformation("Sorry something went wrong, please try again", error))
+        return response.status(501).send(generateErrorInformation("Sorry something went wrong, please try again", error))
     }
 }
 

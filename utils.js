@@ -1,4 +1,4 @@
-function genrateErrorInformation (message, error) {
+function generateErrorInformation (message, error) {
     var errorInformation = {}
     if(error)
         return {
@@ -11,4 +11,4 @@ function genrateErrorInformation (message, error) {
         }
 } 
 
-module.exports = genrateErrorInformation;
+module.exports = generateErrorInformation;

@@ -1,12 +1,13 @@
-const   express  = require('express'),
-        mongoose = require('mongoose'),
-        cors     = require('cors')
-        app      = express(),
-        settings = require("./settings")
-        Question = require("./models/Question"),
-        Answer   = require("./models/Answer")
-        PORT     = process.env.PORT || settings.PORT;
-        auth     = require("./auth")
+const   express         = require('express'),
+        mongoose        = require('mongoose'),
+        cors            = require('cors')
+        app             = express(),
+        settings        = require("./settings")
+        Question        = require("./models/Question"),
+        Answer          = require("./models/Answer")
+        PORT            = process.env.PORT || settings.PORT;
+        auth            = require("./auth")
+        authenticate    = require('./middlewares/authenticate')
 
 app.use(cors())
 app.use(express.json())
@@ -46,7 +47,7 @@ app.get("/api/question/:id", async (request, response) => {
     .catch(error => response.status(500).send({"message": "Encountered some problem with the Database, please try again", "error": error}))
 })
 
-app.post("/api/question", async (request, response) => {
+app.post("/api/question", authenticate, async (request, response) => {
     //get the anser from the request's body
     const question = request.body;
 
@@ -71,7 +72,7 @@ app.post("/api/question", async (request, response) => {
 
 //Routes for Answers
 
-app.post("/api/question/:id/answer", async (request, response) => {
+app.post("/api/question/:id/answer", authenticate, async (request, response) => {
     
     //First insert answer into "Answer" collection
     Answer.create(request.body)
