@@ -9,7 +9,13 @@ const   express         = require('express'),
         auth            = require("./auth")
         authenticate    = require('./middlewares/authenticate')
 
-app.use(cors())
+// app.use(cors())
+app.use(function(request, response, next) {
+    response.header("Access-Control-Allow-Origin", "*");
+    response.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+    response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    next();
+});
 app.use(express.json())
 
 //Connecting to MongoDB Atlas
@@ -22,6 +28,11 @@ mongoose.connect(settings.DB_URI, {useNewUrlParser: true, useUnifiedTopology: tr
 app.post("/api/auth/signup", auth.signup)
 
 app.post("/api/auth/signin", auth.signin)
+
+//MongoDB Query options
+const options = {
+    new: true
+}
 
 //Route for feed
 
@@ -103,6 +114,15 @@ app.post("/api/question/:id/answer", authenticate, async (request, response) => 
         console.log(error); 
         response.status(500).send({"message": "Encountered some problem with the Database, please try again", "error": error})
     })
+})
+
+app.put("/api/question/:id/answer/:answerid", authenticate, async (request, response) => {
+    
+    //Take care of Empty or null answerid
+    const answerUpdate = request.body;
+    Answer.findByIdAndUpdate(request.params.answerid, answerUpdate, options)
+    .then(answer => response.json(answer))
+    .catch(error => response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error)))
 })
 
 app.listen(PORT, () => console.log(`Server is up and running on PORT ${PORT}`));

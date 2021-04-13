@@ -8,7 +8,6 @@ const authenticate = async (request, response, next) => {
     
     //Check if user is authenticated or not
     const Authorization_Header = request.headers.authorization;
-    console.log(Authorization_Header);
     try {
         if(Authorization_Header) {
             const JWT = Authorization_Header.split(' ')[1];
