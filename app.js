@@ -1,6 +1,6 @@
 const   express         = require('express'),
         mongoose        = require('mongoose'),
-        cors            = require('cors')
+        cors            = require('cors'),
         app             = express(),
         settings        = require("./settings")
         Question        = require("./models/Question"),
@@ -8,6 +8,7 @@ const   express         = require('express'),
         PORT            = process.env.PORT || settings.PORT;
         auth            = require("./auth")
         authenticate    = require('./middlewares/authenticate')
+        authorize       = require('./middlewares/authorize')
 
 // app.use(cors())
 app.use(function(request, response, next) {
@@ -81,6 +82,25 @@ app.post("/api/question", authenticate, async (request, response) => {
 
 });
 
+app.put("/api/question/:id", authenticate, authorize, async (request, response) => {
+    const id = request.params.id;
+    const questionUpdate = request.body
+    Question.findByIdAndUpdate(id, questionUpdate, options).populate("answers")
+    .then(question => response.json(question))
+    .catch(error => response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error)))
+})
+
+app.delete("/api/question/:id", authenticate, authorize, async (request, response) => {
+    const id = request.params.id;
+    Question.findByIdAndDelete(id)
+    .then(async question => {
+        //Put this in try catch or use .then() .catch()
+        await Answer.deleteMany({ "_id": { $in: question.answers } })
+        response.json(question)
+    })
+    .catch(error => response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error)))
+})
+
 //Routes for Answers
 
 app.post("/api/question/:id/answer", authenticate, async (request, response) => {
@@ -116,13 +136,28 @@ app.post("/api/question/:id/answer", authenticate, async (request, response) => 
     })
 })
 
-app.put("/api/question/:id/answer/:answerid", authenticate, async (request, response) => {
+app.put("/api/question/:id/answer/:answerid", authenticate, authorize, async (request, response) => {
     
     //Take care of Empty or null answerid
     const answerUpdate = request.body;
     Answer.findByIdAndUpdate(request.params.answerid, answerUpdate, options)
     .then(answer => response.json(answer))
     .catch(error => response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error)))
+})
+
+app.delete("/api/question/:id/answer/:answerid", authenticate, authorize, async (request, response) => {
+    const answerid = request.params.answerid;
+    Answer.findByIdAndDelete(answerid)
+    .then(answer => {
+        Question.findOneAndUpdate({ answers: answer._id }, { $pull: { answers: answerid } })
+        .then(question => console.log(question))
+        .catch(error => response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error)))
+        response.json(answer)
+    })
+    .catch(error => response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error)))
+
+    
+
 })
 
 app.listen(PORT, () => console.log(`Server is up and running on PORT ${PORT}`));
