@@ -1,6 +1,22 @@
 {
     "DB_URI": "mongodb+srv://sharedprofile:sharedprofile@cluster0.9f4vo.mongodb.net/qaforum?retryWrites=true&w=majority",
     "JWT_SECRET": "This is the JWT@Secret", 
+    "RAZORPAY_KEY_ID": "rzp_test_wN8bicFhnr4Eqk",
+    "RAZORPAY_KEY_SECRET": "7nB3laNvBgmKg1UqfM6QSPkD",
+    "PLANS": {
+        "basic": {
+            "price": {
+                "one_month": 0,
+                "one_year": 0 
+            }
+        },
+        "premium": {
+            "price": {
+                "one_month": 10000,
+                "one_year": 100000 
+            }
+        }
+    },
     "SALT_ROUNDS": 10,
     "PORT": 5000
 }

@@ -11,7 +11,21 @@ const schema = new mongoose.Schema({
         unique: true
     },
     firstname: String,
-    lastname: String
+    lastname: String,
+    plan: {
+        name: {
+            type: String, 
+            default: "basic"
+        },
+        duration: {
+            type: String, 
+            default: "lifetime"
+        },
+        currency: {
+            type: String, 
+            default: "INR"
+        }  
+    }
 },
 {
     timestamps: true

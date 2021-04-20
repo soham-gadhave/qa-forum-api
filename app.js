@@ -1,14 +1,18 @@
 const   express         = require('express'),
         mongoose        = require('mongoose'),
-        cors            = require('cors'),
         app             = express(),
-        settings        = require("./settings")
+        settings        = require("./settings"),
         Question        = require("./models/Question"),
-        Answer          = require("./models/Answer")
-        PORT            = process.env.PORT || settings.PORT;
-        auth            = require("./auth")
-        authenticate    = require('./middlewares/authenticate')
-        authorize       = require('./middlewares/authorize')
+        Answer          = require("./models/Answer"),
+        Order           = require("./models/Order"),
+        User            = require("./models/User"),
+        PORT            = process.env.PORT || settings.PORT,
+        auth            = require("./auth"),
+        authenticate    = require('./middlewares/authenticate'),
+        authorize       = require('./middlewares/authorize'),
+        Razorpay        = require('razorpay'),
+        crypto           = require('crypto'),
+        generateErrorInformation = require('./utils')
 
 // app.use(cors())
 app.use(function(request, response, next) {
@@ -34,6 +38,24 @@ app.post("/api/auth/signin", auth.signin)
 const options = {
     new: true
 }
+
+// Route for users
+
+app.put("/api/user/:userid", authenticate, async (request, response) => {
+    
+    const userUpdate = request.body
+    const userid = request.params.userid;
+    User.findByIdAndUpdate(userid, userUpdate, options)
+    .then(user => {
+        if(user)
+            response.json(user)
+        else 
+            response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error))
+    })
+    .catch(error => {
+        response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error))
+    })
+})
 
 //Route for feed
 
@@ -155,9 +177,66 @@ app.delete("/api/question/:id/answer/:answerid", authenticate, authorize, async 
         response.json(answer)
     })
     .catch(error => response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error)))
+})
 
+//Routes for payment
+
+app.post("/api/order", authenticate, async (request, response) => {
     
+    const { plan, duration, currency, payer } = request.body
+    
+    razorpay = new Razorpay({
+        key_id: settings.RAZORPAY_KEY_ID,
+        key_secret: settings.RAZORPAY_KEY_SECRET
+    });
+
+    const amount = settings.PLANS[plan].price[duration]
+    const receipt = "order_rcpt#" + (new Date()).toISOString();
+
+    const options =  {
+        amount: amount,
+        currency: currency,
+        receipt: receipt
+    }
+
+    razorpay.orders.create(options)
+    .then(order => {
+        Order.create({
+            _id: order.id, 
+            payer: payer, 
+            amount: settings.PLANS[plan].price[duration],
+            currency: currency,
+            receipt: receipt
+        })
+        .then(order => response.json(order))
+        .catch(error => response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error)))
+    })
+    .catch(error => response.status(502).send(generateErrorInformation("Encountered some problem while creating order", error))) 
 
 })
+
+app.post("/api/order/:orderid/pay", authenticate, authorize, async (request, response) => {
+    
+    const order_id = request.params.orderid
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = request.body;
+    const signature = crypto.createHmac(
+        "SHA256",
+        settings.RAZORPAY_KEY_SECRET
+    )
+    .update(order_id + "|" + razorpay_payment_id)
+    .digest("hex");  
+
+    if(signature.toString() === razorpay_signature.toString())
+        Order.findByIdAndUpdate(order_id, { payment_id: razorpay_payment_id }, options)
+        .then(order => response.json(order))
+        .catch(error => response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", errro)))
+    else
+        response.status(402).send(generateErrorInformation("Payment not verified"));
+})
+
+//Handling all unmatched routes 
+// app.all("*", (request, response) => {
+//     response.status(404).send(generateErrorInformation("The path with the given method does not exist"))
+// })
 
 app.listen(PORT, () => console.log(`Server is up and running on PORT ${PORT}`));
