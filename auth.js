@@ -15,10 +15,11 @@ const signup = async (request, response) => {
             return response.status(422).send(generateErrorInformation("Password or Email or both are empty. Please enter valid information", null))
     
         //Check If User already exists 
-        user = await User.findOne({ email: email })
-    
-        if(user)
-            return response.status(409).send(generateErrorInformation("User already registered"))
+        user = await User.findOne({ $or: [{ email: email }, { mobile: mobile }]})
+        if(user && user.email === email)
+            return response.status(409).send(generateErrorInformation("Email is already registered"))
+        else if(user && user.mobile === mobile)
+            return response.status(409).send(generateErrorInformation("Mobile number is already registered"))
     
         //Create hash
         bcrypt.hash(password, settings.SALT_ROUNDS)

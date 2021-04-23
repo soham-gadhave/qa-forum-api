@@ -41,6 +41,32 @@ const options = {
 
 // Route for users
 
+app.get("/api/user/:userid/questions", authenticate, async (request, response) => {
+    const userid = request.params.userid;
+
+    try {
+        const questions = await Question.find({ "author.id": userid })
+        return response.json(questions)
+    }
+    catch(error) {
+        response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error))
+    }
+
+})
+
+app.get("/api/user/:userid/answers", authenticate, async (request, response) => {
+    const userid = request.params.userid;
+
+    try {
+        const answers = await Answer.find({ "author.id": userid })
+        return response.json(answers)
+    }
+    catch(error) {
+        response.status(500).send(generateErrorInformation("Encountered some problem with the Database, please try again", error))
+    }
+    
+})
+
 app.put("/api/user/:userid", authenticate, async (request, response) => {
     
     const userUpdate = request.body
