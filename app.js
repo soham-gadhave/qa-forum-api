@@ -67,7 +67,7 @@ app.get("/api/user/:userid/answers", authenticate, async (request, response) => 
     
 })
 
-app.put("/api/user/:userid", authenticate, async (request, response) => {
+app.put("/api/user/:userid", authenticate, authorize, async (request, response) => {
     
     const userUpdate = request.body
     const userid = request.params.userid;

@@ -9,7 +9,8 @@ const authorize = async (request, response, next) => {
     const orderid = request.params.orderid;
     const answerid = request.params.answerid;
     const userid = response.locals.userid;
-
+    const params_userid = request.params.userid;
+    
     //Is the user authorized to edit or delete the answer
     if(answerid) {
         Answer.findById(answerid)
@@ -43,8 +44,15 @@ const authorize = async (request, response, next) => {
         .catch(error => response.status(500).send(generateErrorInformation("There was some problem with the server, please try again", error)))
     }
 
+    //If a user is making request on the route /api/user/userid check whether if he/she is authorized to do so
+    else if(params_userid)
+        if(params_userid === userid)
+            return next();
+        else
+            return response.status(403).send(generateErrorInformation("You are not authorize to do that"))
+
     //Is the user authorized to pay for the order
-    else
+    else {
         try {
             const order = await Order.findById(orderid)
             if(order) {
@@ -59,6 +67,8 @@ const authorize = async (request, response, next) => {
         catch(error) {
             return response.status(500).send(generateErrorInformation("There was some problem with the server, please try again", error))
         }
+    }
+
 }
 
 module.exports = authorize;
