@@ -1,8 +1,8 @@
 {
-    "DB_URI": "mongodb+srv://sharedprofile:sharedprofile@cluster0.9f4vo.mongodb.net/qaforum?retryWrites=true&w=majority",
-    "JWT_SECRET": "This is the JWT@Secret", 
-    "RAZORPAY_KEY_ID": "rzp_live_C8mu2PtIdwo8db",
-    "RAZORPAY_KEY_SECRET": "b8U6zGZYkAgFcLxP54mmYhxQ",
+    "DB_URI": "YOUT_DB_URI",
+    "JWT_SECRET": "YOUR_JWT_SECRET", 
+    "RAZORPAY_KEY_ID": "YOUR_RAZORPAY_API_KEY_ID",
+    "RAZORPAY_KEY_SECRET": "YOUR_RAZORPAY_API_KEY_SECRET",
     "PLANS": {
         "basic": {
             "price": {
